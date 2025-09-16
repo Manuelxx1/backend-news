@@ -12,13 +12,13 @@ app.post('/send-news', async (req, res) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'tuemail@gmail.com',       // Reemplazá con tu email
-      pass: 'tu_clave_app'             // Reemplazá con tu App Password de Gmail
+      user: 'manuelbaidoxx6@gmail.com',       // Reemplazá con tu email
+      pass: 'gqekhmqueanhtrri'             // Reemplazá con tu App Password de Gmail
     }
   });
 
   const mailOptions = {
-    from: 'tuemail@gmail.com',
+    from: 'manuelbaidoxx6@gmail.com',
     to: email,
     subject: 'Noticias Cripto del Día',
     html: `
@@ -44,3 +44,4 @@ app.post('/send-news', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
