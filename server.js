@@ -4,7 +4,7 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:4200'
+  origin: '*'
 }));
 
 app.use(express.json());
@@ -47,5 +47,6 @@ app.post('/send-news', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
