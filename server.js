@@ -72,8 +72,8 @@ app.get('/enviar-boletin', async (req, res) => {
 
   // 🧠 Lista de usuarios e intereses (puede venir de una base de datos en el futuro)
   const usuarios = [
-    { email: 'manuel@example.com', intereses: ['cripto', 'tecnologia'] },
-    { email: 'sofia@example.com', intereses: ['politica'] }
+    { email: 'manuelbaidoxx6@gmail.com', intereses: ['economia', 'tecnologia'] },
+   // { email: 'sofia@example.com', intereses: ['politica'] }
   ];
 
   // 🔗 Enlaces por sección
@@ -123,6 +123,7 @@ app.get('/enviar-boletin', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
 
