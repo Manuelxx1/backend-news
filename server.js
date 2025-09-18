@@ -78,10 +78,10 @@ app.get('/enviar-boletin', async (req, res) => {
 
   // 🔗 Enlaces por sección
   const enlacesPorSeccion = {
-    cripto: 'https://tusitio.com/cripto',
-    tecnologia: 'https://tusitio.com/tecnologia',
-    politica: 'https://tusitio.com/politica',
-    deportes: 'https://tusitio.com/deportes'
+    cripto: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
+  tecnologia: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
+  politica: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/politica',
+  deportes: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/deportes'
   };
 
   // ✉️ Configuración de Nodemailer
@@ -123,6 +123,7 @@ app.get('/enviar-boletin', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
 
