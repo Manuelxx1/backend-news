@@ -8,44 +8,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
 /*
-app.post('/send-news', async (req, res) => {
-  const { email } = req.body;
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'manuelbaidoxx6@gmail.com',       // Reemplazá con tu email
-      pass: 'gqekhmqueanhtrri'             // Reemplazá con tu App Password de Gmail
-    }
-  });
-
-  const mailOptions = {
-    from: 'manuelbaidoxx6@gmail.com',
-    to: email,
-    subject: 'Noticias Cripto del Día',
-    html: `
-      <h2>🚀 Actualización de precios</h2>
-      <ul>
-        <li>BTC subió 3.2%</li>
-        <li>ETH bajó 1.1%</li>
-        <li>DOGE se mantiene estable</li>
-      </ul>
-      <p>Gracias por seguirnos, Manuel 😉</p>
-    `
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    res.status(200).send({ message: 'Correo enviado con éxito' });
-  } catch (error) {
-    console.error('Error al enviar correo:', error);
-    res.status(500).send({ message: 'Error al enviar correo' });
-  }
-});
-
-*/
-
 const enlacesPorSeccion = {
   cripto: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
   tecnologia: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
@@ -96,12 +60,70 @@ app.post('/enviar-correo', async (req, res) => {
     res.status(500).send({ message: 'Error al enviar correo' });
   }
 });
+*/
+
+app.get('/enviar-boletin', async (req, res) => {
+  const token = req.query.token;
+
+  // 🔒 Validación de seguridad
+  if (token !== 'secreto123') {
+    return res.status(403).send({ message: 'Acceso no autorizado' });
+  }
+
+  // 🧠 Lista de usuarios e intereses (puede venir de una base de datos en el futuro)
+  const usuarios = [
+    { email: 'manuel@example.com', intereses: ['cripto', 'tecnologia'] },
+    { email: 'sofia@example.com', intereses: ['politica'] }
+  ];
+
+  // 🔗 Enlaces por sección
+  const enlacesPorSeccion = {
+    cripto: 'https://tusitio.com/cripto',
+    tecnologia: 'https://tusitio.com/tecnologia',
+    politica: 'https://tusitio.com/politica',
+    deportes: 'https://tusitio.com/deportes'
+  };
+
+  // ✉️ Configuración de Nodemailer
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'manuelbaidoxx6@gmail.com',
+      pass: 'gqek hmqu eanh trri'
+    }
+  });
+
+  // 📤 Envío de correos personalizados
+  for (const usuario of usuarios) {
+    const enlacesHTML = usuario.intereses.map(i => {
+      const url = enlacesPorSeccion[i];
+      return url ? `<li><a href="${url}">${i}</a></li>` : '';
+    }).join('');
+
+    const html = `
+      <h2>📰 Noticias seleccionadas</h2>
+      <p>Hola ${usuario.email}, estas son tus secciones elegidas:</p>
+      <ul>${enlacesHTML}</ul>
+      <p>Gracias por seguirnos, ¡nos vemos mañana!</p>
+    `;
+
+    await transporter.sendMail({
+      from: 'manuelbaidoxx6@gmail.com',
+      to: usuario.email,
+      subject: 'Tu boletín personalizado',
+      html
+    });
+  }
+
+  res.send({ message: 'Boletines enviados correctamente' });
+});
 
 
 
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
 
