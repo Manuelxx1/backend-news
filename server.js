@@ -44,9 +44,22 @@ app.post('/send-news', async (req, res) => {
   }
 });
 
+app.post('/intereses', (req, res) => {
+  const { email, intereses } = req.body;
+
+  if (!email || !intereses || !Array.isArray(intereses)) {
+    return res.status(400).send({ message: 'Datos inválidos' });
+  }
+
+  console.log(`Usuario ${email} eligió: ${intereses.join(', ')}`);
+  res.send({ message: 'Preferencias guardadas' });
+});
+
+
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
 
