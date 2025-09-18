@@ -1,0 +1,14 @@
+name: Enviar boletín diario
+
+on:
+  schedule:
+    - cron: '0 11 * * *'  # Todos los días a las 08:00 AM hora Argentina (UTC-3 = 11 UTC)
+  workflow_dispatch:      # Permite ejecutarlo manualmente desde GitHub
+
+jobs:
+  enviar-boletin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar al endpoint de Render
+        run: |
+          curl -X GET "https://backend-news-tk56.onrender.com/enviar-boletin?token=secreto123"
