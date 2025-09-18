@@ -8,7 +8,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
+/*
 app.post('/send-news', async (req, res) => {
   const { email } = req.body;
 
@@ -44,21 +44,52 @@ app.post('/send-news', async (req, res) => {
   }
 });
 
-app.post('/intereses', (req, res) => {
+*/
+app.post('/enviar-correo', async (req, res) => {
   const { email, intereses } = req.body;
 
-  if (!email || !intereses || !Array.isArray(intereses)) {
-    return res.status(400).send({ message: 'Datos inválidos' });
+  if (!email || !Array.isArray(intereses) || intereses.length === 0) {
+    return res.status(400).send({ message: 'Faltan datos o intereses vacíos' });
   }
 
-  console.log(`Usuario ${email} eligió: ${intereses.join(', ')}`);
-  res.send({ message: 'Preferencias guardadas' });
+  const contenido = intereses.map(i => `<li>${i}</li>`).join('');
+  const html = `
+    <h2>📰 Tus noticias seleccionadas</h2>
+    <p>Recibiste este correo porque elegiste recibir noticias sobre:</p>
+    <ul>${contenido}</ul>
+    <p>Gracias por usar nuestro servicio, Manuel 😉</p>
+  `;
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'manuelbaidoxx6@gmail.com',
+      pass: 'gqek hmqu eanh trri'
+    }
+  });
+
+  const mailOptions = {
+    from: 'manuelbaidoxx6@gmail.com',
+    to: email,
+    subject: 'Tus preferencias de noticias',
+    html
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.send({ message: 'Correo enviado con tus preferencias' });
+  } catch (error) {
+    console.error('Error al enviar correo:', error);
+    res.status(500).send({ message: 'Error al enviar correo' });
+  }
 });
+
 
 
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
 
