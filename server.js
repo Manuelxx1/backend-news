@@ -1,15 +1,14 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
 const cors = require('cors');
 
 const app = express();
-app.use(cors({
-  origin: '*'
-}));
-
 app.use(express.json());
+app.use(cors());
 
-/*
+// 🌐 Enlaces por sección
 const enlacesPorSeccion = {
   cripto: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
   tecnologia: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
@@ -17,64 +16,16 @@ const enlacesPorSeccion = {
   deportes: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/deportes'
 };
 
-app.post('/enviar-correo', async (req, res) => {
-  const { email, intereses } = req.body;
-
-  if (!email || !Array.isArray(intereses) || intereses.length === 0) {
-    return res.status(400).send({ message: 'Faltan datos o intereses vacíos' });
-  }
-
-  const enlacesHTML = intereses.map(i => {
-    const url = enlacesPorSeccion[i];
-    return url ? `<li><a href="${url}">${i}</a></li>` : '';
-  }).join('');
-
-  const html = `
-    <h2>📰 Tus noticias seleccionadas</h2>
-    <p>Elegiste recibir noticias sobre:</p>
-    <ul>${enlacesHTML}</ul>
-    <p>Podés hacer clic en cada enlace para ver la sección directamente en nuestro sitio.</p>
-    <p>Gracias por elegir tu contenido, Manuel 😉</p>
-  `;
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'manuelbaidoxx6@gmail.com',
-      pass: 'gqek hmqu eanh trri'
-    }
-  });
-
-  const mailOptions = {
-    from: 'manuelbaidoxx6@gmail.com',
-    to: email,
-    subject: 'Tus secciones de noticias personalizadas',
-    html
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    res.send({ message: 'Correo enviado con enlaces personalizados' });
-  } catch (error) {
-    console.error('Error al enviar correo:', error);
-    res.status(500).send({ message: 'Error al enviar correo' });
+// ✉️ Configuración de Nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'manuelbaidoxx6@gmail.com',
+    pass: 'gqek hmqu eanh trri' // contraseña de aplicación
   }
 });
-*/
 
-//datos de usuario del form para nodemailer
-//y luego ser usado por enviar-boletin para,workflow
-
-const fs = require('fs');
-const path = require('path');
-
-const enlacesPorSeccion = {
-  cripto: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
-  tecnologia: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
-  politica: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/politica',
-  deportes: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/deportes'
-};
-
+// 📥 Guardar datos del formulario
 app.post('/enviar-correo', (req, res) => {
   const { email, intereses } = req.body;
 
@@ -85,13 +36,11 @@ app.post('/enviar-correo', (req, res) => {
   const filePath = path.join(__dirname, 'usuarios.json');
   let usuarios = [];
 
-  // Leer archivo existente
   if (fs.existsSync(filePath)) {
     const data = fs.readFileSync(filePath, 'utf8');
     usuarios = JSON.parse(data);
   }
 
-  // Reemplazar si el email ya existe
   const index = usuarios.findIndex(u => u.email === email);
   if (index !== -1) {
     usuarios[index].intereses = intereses;
@@ -99,15 +48,11 @@ app.post('/enviar-correo', (req, res) => {
     usuarios.push({ email, intereses });
   }
 
-  // Guardar en archivo
   fs.writeFileSync(filePath, JSON.stringify(usuarios, null, 2));
-
   res.send({ message: 'Usuario guardado en archivo JSON' });
 });
 
-//ver json en navegador
-
-
+// 👀 Ver usuarios registrados
 app.get('/usuarios', (req, res) => {
   const filePath = path.join(__dirname, 'usuarios.json');
 
@@ -125,9 +70,7 @@ app.get('/usuarios', (req, res) => {
   }
 });
 
-
-
-//usado por workflow
+// 🚀 Enviar boletines (usado por workflow)
 app.get('/enviar-boletin', async (req, res) => {
   try {
     if (req.query.token !== 'secreto123') {
@@ -149,13 +92,14 @@ app.get('/enviar-boletin', async (req, res) => {
     for (const usuario of usuarios) {
       const enlacesHTML = usuario.intereses.map(i => {
         const url = enlacesPorSeccion[i];
-        return url ? `<li><a href="${url}">${i}</a></li>` : '';
+        return url ? `<li><a href="${url}">${i}</a></li>` : `<li>${i} (sin enlace)</li>`;
       }).join('');
 
       const html = `
         <h2>📰 Noticias seleccionadas</h2>
         <p>Hola ${usuario.email}, estas son tus secciones elegidas:</p>
         <ul>${enlacesHTML}</ul>
+        <p>Gracias por seguirnos, ¡nos vemos mañana!</p>
       `;
 
       await transporter.sendMail({
@@ -173,22 +117,7 @@ app.get('/enviar-boletin', async (req, res) => {
   }
 });
 
-
-
+// 🟢 Iniciar servidor
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
