@@ -100,8 +100,6 @@ app.post('/enviar-correo', (req, res) => {
 
 //ver json en navegador
 
-const fs = require('fs');
-const path = require('path');
 
 app.get('/usuarios', (req, res) => {
   const filePath = path.join(__dirname, 'usuarios.json');
@@ -173,6 +171,7 @@ app.get('/enviar-boletin', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
 
