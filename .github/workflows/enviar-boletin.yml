@@ -9,6 +9,13 @@ jobs:
   enviar-boletin:
     runs-on: ubuntu-latest
     steps:
-      - name: Llamar al endpoint de Render
+      - name: Despertar el servidor de Render
+        run: |
+          curl -s "https://backend-news-tk56.onrender.com"
+
+      - name: Esperar 60 segundos para que Render se active
+        run: sleep 60
+
+      - name: Llamar al endpoint de envío de boletines
         run: |
           curl -X GET "https://backend-news-tk56.onrender.com/enviar-boletin?token=secreto123"
