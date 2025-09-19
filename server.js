@@ -62,38 +62,56 @@ app.post('/enviar-correo', async (req, res) => {
 });
 */
 
-app.get('/enviar-boletin', async (req, res) => {
-  const token = req.query.token;
+//datos de usuario del form para nodemailer
+//y luego ser usado por enviar-boletin para,workflow
 
-  // 🔒 Validación de seguridad
-  if (token !== 'secreto123') {
+const fs = require('fs');
+const path = require('path');
+
+app.post('/enviar-correo', (req, res) => {
+  const { email, intereses } = req.body;
+
+  if (!email || !Array.isArray(intereses)) {
+    return res.status(400).send({ message: 'Datos inválidos' });
+  }
+
+  const filePath = path.join(__dirname, 'usuarios.json');
+  let usuarios = [];
+
+  // Leer archivo existente
+  if (fs.existsSync(filePath)) {
+    const data = fs.readFileSync(filePath, 'utf8');
+    usuarios = JSON.parse(data);
+  }
+
+  // Reemplazar si el email ya existe
+  const index = usuarios.findIndex(u => u.email === email);
+  if (index !== -1) {
+    usuarios[index].intereses = intereses;
+  } else {
+    usuarios.push({ email, intereses });
+  }
+
+  // Guardar en archivo
+  fs.writeFileSync(filePath, JSON.stringify(usuarios, null, 2));
+
+  res.send({ message: 'Usuario guardado en archivo JSON' });
+});
+
+//usado por workflow
+app.get('/enviar-boletin', async (req, res) => {
+  if (req.query.token !== 'secreto123') {
     return res.status(403).send({ message: 'Acceso no autorizado' });
   }
 
-  // 🧠 Lista de usuarios e intereses (puede venir de una base de datos en el futuro)
-  const usuarios = [
-    { email: 'manuelbaidoxx6@gmail.com', intereses: ['economia', 'tecnologia'] },
-   // { email: 'sofia@example.com', intereses: ['politica'] }
-  ];
+  const filePath = path.join(__dirname, 'usuarios.json');
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send({ message: 'No hay usuarios registrados' });
+  }
 
-  // 🔗 Enlaces por sección
-  const enlacesPorSeccion = {
-    cripto: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
-  tecnologia: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/tecnologia',
-  politica: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/politica',
-  deportes: 'https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/deportes'
-  };
+  const data = fs.readFileSync(filePath, 'utf8');
+  const usuarios = JSON.parse(data);
 
-  // ✉️ Configuración de Nodemailer
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'manuelbaidoxx6@gmail.com',
-      pass: 'gqek hmqu eanh trri'
-    }
-  });
-
-  // 📤 Envío de correos personalizados
   for (const usuario of usuarios) {
     const enlacesHTML = usuario.intereses.map(i => {
       const url = enlacesPorSeccion[i];
@@ -104,7 +122,6 @@ app.get('/enviar-boletin', async (req, res) => {
       <h2>📰 Noticias seleccionadas</h2>
       <p>Hola ${usuario.email}, estas son tus secciones elegidas:</p>
       <ul>${enlacesHTML}</ul>
-      <p>Gracias por seguirnos, ¡nos vemos mañana!</p>
     `;
 
     await transporter.sendMail({
@@ -115,14 +132,14 @@ app.get('/enviar-boletin', async (req, res) => {
     });
   }
 
-  res.send({ message: 'Boletines enviados correctamente' });
+  res.send({ message: 'Boletines enviados desde archivo JSON' });
 });
-
 
 
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
 
