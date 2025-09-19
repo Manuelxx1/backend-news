@@ -98,6 +98,30 @@ app.post('/enviar-correo', (req, res) => {
   res.send({ message: 'Usuario guardado en archivo JSON' });
 });
 
+//ver json en navegador
+
+const fs = require('fs');
+const path = require('path');
+
+app.get('/usuarios', (req, res) => {
+  const filePath = path.join(__dirname, 'usuarios.json');
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send({ message: 'Archivo no encontrado' });
+  }
+
+  try {
+    const data = fs.readFileSync(filePath, 'utf8');
+    const usuarios = JSON.parse(data);
+    res.send(usuarios);
+  } catch (error) {
+    console.error('❌ Error al leer usuarios.json:', error);
+    res.status(500).send({ message: 'Error al procesar el archivo' });
+  }
+});
+
+
+
 //usado por workflow
 app.get('/enviar-boletin', async (req, res) => {
   try {
@@ -149,6 +173,7 @@ app.get('/enviar-boletin', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
 
