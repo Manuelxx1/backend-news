@@ -100,45 +100,56 @@ app.post('/enviar-correo', (req, res) => {
 
 //usado por workflow
 app.get('/enviar-boletin', async (req, res) => {
-  if (req.query.token !== 'secreto123') {
-    return res.status(403).send({ message: 'Acceso no autorizado' });
+  try {
+    if (req.query.token !== 'secreto123') {
+      return res.status(403).send({ message: 'Acceso no autorizado' });
+    }
+
+    const filePath = path.join(__dirname, 'usuarios.json');
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send({ message: 'No hay usuarios registrados' });
+    }
+
+    const data = fs.readFileSync(filePath, 'utf8');
+    const usuarios = JSON.parse(data);
+
+    if (!Array.isArray(usuarios) || usuarios.length === 0) {
+      return res.status(200).send({ message: 'No hay usuarios para enviar boletines' });
+    }
+
+    for (const usuario of usuarios) {
+      const enlacesHTML = usuario.intereses.map(i => {
+        const url = enlacesPorSeccion[i];
+        return url ? `<li><a href="${url}">${i}</a></li>` : '';
+      }).join('');
+
+      const html = `
+        <h2>📰 Noticias seleccionadas</h2>
+        <p>Hola ${usuario.email}, estas son tus secciones elegidas:</p>
+        <ul>${enlacesHTML}</ul>
+      `;
+
+      await transporter.sendMail({
+        from: 'manuelbaidoxx6@gmail.com',
+        to: usuario.email,
+        subject: 'Tu boletín personalizado',
+        html
+      });
+    }
+
+    res.send({ message: 'Boletines enviados desde archivo JSON' });
+  } catch (error) {
+    console.error('❌ Error en /enviar-boletin:', error);
+    res.status(500).send({ message: 'Error interno del servidor' });
   }
-
-  const filePath = path.join(__dirname, 'usuarios.json');
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send({ message: 'No hay usuarios registrados' });
-  }
-
-  const data = fs.readFileSync(filePath, 'utf8');
-  const usuarios = JSON.parse(data);
-
-  for (const usuario of usuarios) {
-    const enlacesHTML = usuario.intereses.map(i => {
-      const url = enlacesPorSeccion[i];
-      return url ? `<li><a href="${url}">${i}</a></li>` : '';
-    }).join('');
-
-    const html = `
-      <h2>📰 Noticias seleccionadas</h2>
-      <p>Hola ${usuario.email}, estas son tus secciones elegidas:</p>
-      <ul>${enlacesHTML}</ul>
-    `;
-
-    await transporter.sendMail({
-      from: 'manuelbaidoxx6@gmail.com',
-      to: usuario.email,
-      subject: 'Tu boletín personalizado',
-      html
-    });
-  }
-
-  res.send({ message: 'Boletines enviados desde archivo JSON' });
 });
+
 
 
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+
 
 
 
