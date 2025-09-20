@@ -139,7 +139,8 @@ const db = mysql.createConnection({
   password: 'AVNS_Um-I9imgU39tQcemNPa',
   database: 'defaultdb',
   port: 18175,
-  ssl: { rejectUnauthorized: true }
+  ssl: { rejectUnauthorized: false }
+
 });
 
 // Ruta para recibir preferencias
@@ -187,5 +188,6 @@ app.post('/guardar-preferencias', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en puerto 3000');
 });
+
 
 
