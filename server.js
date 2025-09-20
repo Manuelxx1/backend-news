@@ -1,3 +1,4 @@
+/* para json
 const express = require('express');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
@@ -121,3 +122,70 @@ app.get('/enviar-boletin', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
 });
+*/
+
+const express = require('express');
+const mysql = require('mysql2');
+const nodemailer = require('nodemailer');
+const bodyParser = require('body-parser');
+
+const app = express();
+app.use(bodyParser.json());
+
+// Conexión a Aiven
+const db = mysql.createConnection({
+  host: 'mysql-3fbee301-manuelbaidoxx6-40e1.l.aivencloud.com',
+  user: 'avnadmin',
+  password: 'AVNS_Um-I9imgU39tQcemNPa',
+  database: 'defaultdb',
+  port: 18175,
+  ssl: { rejectUnauthorized: true }
+});
+
+// Ruta para recibir preferencias
+app.post('/guardar-preferencias', async (req, res) => {
+  const { usuario_email, categoria_preferida, frecuencia_envio } = req.body;
+
+  const query = `
+    INSERT INTO preferencias (usuario_email, categoria_preferida, frecuencia_envio)
+    VALUES (?, ?, ?)
+  `;
+
+  db.query(query, [usuario_email, categoria_preferida, frecuencia_envio], (err, result) => {
+    if (err) {
+      console.error('Error al insertar en MySQL:', err);
+      return res.status(500).send('Error al guardar preferencias');
+    }
+
+    // Enviar email de confirmación
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'manuelbaidoxx6@gmail.com',
+    pass: 'gqek hmqu eanh trri' // contraseña de aplicación
+      }
+    });
+
+    const mailOptions = {
+      from: 'manuelbaidoxx6@gmail.com',
+      to: usuario_email,
+      subject: 'Preferencias guardadas',
+      text: `Hola! Tus preferencias han sido guardadas: categoría ${categoria_preferida}, frecuencia ${frecuencia_envio}.`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Error al enviar email:', error);
+        return res.status(500).send('Preferencias guardadas, pero fallo el email');
+      }
+      res.send('Preferencias guardadas y email enviado');
+    });
+  });
+});
+
+// Iniciar servidor
+app.listen(3000, () => {
+  console.log('Servidor corriendo en puerto 3000');
+});
+
+
