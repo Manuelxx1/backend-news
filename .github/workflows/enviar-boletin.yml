@@ -18,4 +18,4 @@ jobs:
 
       - name: Llamar al endpoint de envío de boletines
         run: |
-          curl -X GET "https://backend-news-tk56.onrender.com/enviar-boletin?token=secreto123"
+          curl -X GET "https://backend-news-tk56.onrender.com/enviar-boletin"
