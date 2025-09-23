@@ -169,7 +169,7 @@ app.post('/guardar-preferencias', async (req, res) => {
       console.error('Error al insertar en MySQL:', err);
       return res.status(500).json({ message: 'Error al guardar preferencias' });
     }
-
+  }
     
 // Enviar correo con worksflow
 app.post('/enviar-boletin', (req, res) => {
@@ -202,6 +202,7 @@ const transporter = nodemailer.createTransport({
 app.listen(3000, () => {
   console.log('Servidor corriendo en puerto 3000');
 });
+
 
 
 
