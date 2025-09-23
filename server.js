@@ -145,7 +145,15 @@ const db = mysql.createConnection({
 
 // Ruta para recibir preferencias
 app.post('/guardar-preferencias', async (req, res) => {
-  const { usuario_email, categoria_preferida, frecuencia_envio } = req.body;
+  const { email, intereses } = req.body;
+
+  if (!email || !Array.isArray(intereses)) {
+    return res.status(400).send('Datos inválidos');
+  }
+
+  const usuario_email = email;
+  const categoria_preferida = intereses.join(', ');
+  const frecuencia_envio = 'personalizado';
 
   const query = `
     INSERT INTO preferencias (usuario_email, categoria_preferida, frecuencia_envio)
@@ -158,12 +166,11 @@ app.post('/guardar-preferencias', async (req, res) => {
       return res.status(500).send('Error al guardar preferencias');
     }
 
-    // Enviar email de confirmación
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: 'manuelbaidoxx6@gmail.com',
-    pass: 'gqek hmqu eanh trri' // contraseña de aplicación
+        pass: 'gqek hmqu eanh trri'
       }
     });
 
@@ -177,17 +184,19 @@ app.post('/guardar-preferencias', async (req, res) => {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error('Error al enviar email:', error);
-        return res.status(500).send('Preferencias guardadas, pero fallo el email');
+        return res.status(500).send('Preferencias guardadas, pero falló el email');
       }
-      res.send('Preferencias guardadas y email enviado');
+      res.send({ message: 'Preferencias guardadas y email enviado' });
     });
   });
 });
+
 
 // Iniciar servidor
 app.listen(3000, () => {
   console.log('Servidor corriendo en puerto 3000');
 });
+
 
 
 
