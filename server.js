@@ -170,7 +170,13 @@ app.post('/guardar-preferencias', async (req, res) => {
       return res.status(500).json({ message: 'Error al guardar preferencias' });
     }
 
-    const transporter = nodemailer.createTransport({
+    
+// Enviar correo con worksflow
+app.post('/enviar-boletin', (req, res) => {
+  const { email, intereses } = req.body;
+  const categoria_preferida = intereses.join(', ');
+
+const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: 'manuelbaidoxx6@gmail.com',
@@ -178,30 +184,25 @@ app.post('/guardar-preferencias', async (req, res) => {
       }
     });
 
-    const mailOptions = {
-      from: 'manuelbaidoxx6@gmail.com',
-      to: usuario_email,
-      subject: 'Preferencias guardadas',
-      text: `Hola! Tus preferencias han sido guardadas: categoría ${categoria_preferida}, frecuencia ${frecuencia_envio}.`
-    };
+  const mailOptions = {
+    from: 'manuelbaidoxx6@gmail.com',
+    to: email,
+    subject: 'Preferencias guardadas',
+    text: `Tus intereses: ${categoria_preferida}`
+  };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Error al enviar email:', error);
-        return res.status(500).json({ message: 'Preferencias guardadas, pero falló el email' });
-      }
-
-      console.log('Email enviado:', info.response);
-      res.status(200).json({ message: 'Preferencias guardadas y email enviado' });
-    });
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) return res.status(500).json({ message: 'Error al enviar correo' });
+    res.json({ message: 'Correo enviado' });
   });
 });
-
+    
 
 // Iniciar servidor
 app.listen(3000, () => {
   console.log('Servidor corriendo en puerto 3000');
 });
+
 
 
 
