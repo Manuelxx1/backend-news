@@ -132,6 +132,10 @@ const bodyParser = require('body-parser');
 const app = express();
 app.use(bodyParser.json());
 
+const cors = require('cors');
+app.use(cors());
+
+
 // Conexión a Aiven
 const db = mysql.createConnection({
   host: 'mysql-3fbee301-manuelbaidoxx6-40e1.l.aivencloud.com',
@@ -198,6 +202,7 @@ app.post('/guardar-preferencias', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en puerto 3000');
 });
+
 
 
 
