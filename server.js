@@ -184,9 +184,11 @@ app.post('/guardar-preferencias', async (req, res) => {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error('Error al enviar email:', error);
-        return res.status(500).send('Preferencias guardadas, pero falló el email');
+        return res.status(500).send({ message: 'Preferencias guardadas, pero falló el email' });
+
       }
       res.send({ message: 'Preferencias guardadas y email enviado' });
+
     });
   });
 });
@@ -196,6 +198,7 @@ app.post('/guardar-preferencias', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en puerto 3000');
 });
+
 
 
 
