@@ -10,12 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Despertar el servidor de Render
-        run: |
-          curl -s "https://backend-news-tk56.onrender.com"
+        run: curl -s "https://backend-news-tk56.onrender.com"
 
       - name: Esperar 60 segundos para que Render se active
         run: sleep 60
 
       - name: Llamar al endpoint de envío de boletines
         run: |
-          curl -X GET "https://backend-news-tk56.onrender.com/enviar-boletin"
+          curl -X POST "https://backend-news-tk56.onrender.com/enviar-boletines-diarios"
