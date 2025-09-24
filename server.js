@@ -131,7 +131,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 app.use(bodyParser.json());
-
+app.use(express.json());
 const cors = require('cors');
 app.use(cors());
 
@@ -175,13 +175,17 @@ app.post('/guardar-preferencias', async (req, res) => {
   }); // ← Esta llave cierra el db.query
 }); // ← Esta cierra el endpoint
 
-    
-// Enviar correo con worksflow
-app.post('/enviar-boletin', (req, res) => {
-  const { email, intereses } = req.body;
-  const categoria_preferida = intereses.join(', ');
+app.post('/enviar-boletines-diarios', async (req, res) => {
+  const query = `
+    SELECT usuario_email, categoria_preferida
+    FROM preferencias
+    WHERE frecuencia_envio = 'personalizado'
+  `;
 
-const transporter = nodemailer.createTransport({
+  db.query(query, async (err, results) => {
+    if (err) return res.status(500).json({ message: 'Error al obtener usuarios' });
+
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: 'manuelbaidoxx6@gmail.com',
@@ -189,24 +193,35 @@ const transporter = nodemailer.createTransport({
       }
     });
 
-  const mailOptions = {
-    from: 'manuelbaidoxx6@gmail.com',
-    to: email,
-    subject: 'Preferencias guardadas',
-    text: `Tus intereses: ${categoria_preferida}`
-  };
+    for (const usuario of results) {
+      const mailOptions = {
+        from: 'manuelbaidoxx6@gmail.com',
+        to: usuario.usuario_email,
+        subject: 'Boletín diario',
+        text: `Tus intereses: ${usuario.categoria_preferida}`
+      };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) return res.status(500).json({ message: 'Error al enviar correo' });
-    res.json({ message: 'Correo enviado' });
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (error) {
+        console.error(`Error al enviar a ${usuario.usuario_email}:`, error);
+      }
+    }
+
+    res.json({ message: 'Boletines enviados' });
   });
 });
+
+
+    
+
     
 
 // Iniciar servidor
 app.listen(3000, () => {
   console.log('Servidor corriendo en puerto 3000');
 });
+
 
 
 
