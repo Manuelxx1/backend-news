@@ -124,17 +124,15 @@ app.listen(3000, () => {
 });
 */
 
-const express = require('express');
+
+    const express = require('express');
 const mysql = require('mysql2');
 const nodemailer = require('nodemailer');
-const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
-app.use(bodyParser.json());
-app.use(express.json());
-const cors = require('cors');
 app.use(cors());
-
+app.use(express.json());
 
 // Conexión a Aiven
 const db = mysql.createConnection({
@@ -144,11 +142,10 @@ const db = mysql.createConnection({
   database: 'defaultdb',
   port: 18175,
   ssl: { rejectUnauthorized: false }
-
 });
 
-// Ruta para recibir preferencias
-app.post('/guardar-preferencias', async (req, res) => {
+// Endpoint para guardar preferencias
+app.post('/guardar-preferencias', (req, res) => {
   const { email, intereses } = req.body;
 
   if (!email || !Array.isArray(intereses)) {
@@ -164,17 +161,17 @@ app.post('/guardar-preferencias', async (req, res) => {
     VALUES (?, ?, ?)
   `;
 
-  db.query(query, [usuario_email, categoria_preferida, frecuencia_envio], (err, result) => {
+  db.query(query, [usuario_email, categoria_preferida, frecuencia_envio], (err) => {
     if (err) {
       console.error('Error al insertar en MySQL:', err);
       return res.status(500).json({ message: 'Error al guardar preferencias' });
     }
 
-    // ✅ ¡Falta esta línea!
     res.status(200).json({ message: 'Preferencias guardadas correctamente' });
-  }); // ← Esta llave cierra el db.query
-}); // ← Esta cierra el endpoint
+  });
+});
 
+// Endpoint para enviar boletines diarios
 app.post('/enviar-boletines-diarios', async (req, res) => {
   const query = `
     SELECT usuario_email, categoria_preferida
@@ -212,14 +209,10 @@ app.post('/enviar-boletines-diarios', async (req, res) => {
   });
 });
 
-
-    
-
-    
-
-// Iniciar servidor
-app.listen(3000, () => {
-  console.log('Servidor corriendo en puerto 3000');
+// Escuchar en el puerto asignado por Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
 
 
