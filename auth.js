@@ -8,7 +8,7 @@ const port = 3000;
 const oauth2Client = new google.auth.OAuth2(
   '781091117638-i3l123u2tre8un0q4dtvv0erqteckpi7.apps.googleusercontent.com',
   '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',
-  'http://localhost:3000/oauth2callback'
+  'https://3000-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/oauth2callback'
 );
 
 const SCOPES = ['https://mail.google.com/'];
@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
     scope: SCOPES,
   });
 
-  console.log('\n🔗 Abrí esta URL en tu navegador para autorizar:\n');
+  console.log('\n🔗 Copiá esta URL y pegala en tu navegador para autorizar:\n');
   console.log(authUrl);
   res.send('Abrí la URL que aparece en la consola para autorizar.');
 });
@@ -40,5 +40,5 @@ app.get('/oauth2callback', async (req, res) => {
 
 app.listen(port, () => {
   console.log(`\n🚀 Servidor iniciado en http://localhost:${port}`);
-  console.log('Visitá esa URL en tu navegador para comenzar el proceso de autorización.\n');
+  console.log('Visitá https://3000-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/ en tu navegador para comenzar.\n');
 });
