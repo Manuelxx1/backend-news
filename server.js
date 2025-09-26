@@ -185,14 +185,14 @@ app.post('/enviar-boletines-diarios', async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'manuelbaidoxx6@gmail.com',
-        pass: 'gqek hmqu eanh trri'
+        user: 'noticiashoywebapp@gmail.com',
+        pass: 'srcb ljhx mohb ntiv'
       }
     });
 
     for (const usuario of results) {
       const mailOptions = {
-        from: 'manuelbaidoxx6@gmail.com',
+        from: 'noticiashoywebapp@gmail.com',
         to: usuario.usuario_email,
         subject: 'Boletín diario',
         text: `Tus intereses: ${usuario.categoria_preferida}`
@@ -214,6 +214,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
+
 
 
 
