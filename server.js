@@ -172,7 +172,7 @@ app.post('/guardar-preferencias', (req, res) => {
 });
 
 // Endpoint para enviar boletines diarios
-app.post('/enviar-boletines-diarios', async (req, res) => {
+app.get('/enviar-boletines-diarios', async (req, res) => {
   const query = `
     SELECT usuario_email, categoria_preferida
     FROM preferencias
@@ -214,6 +214,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
+
 
 
 
