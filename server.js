@@ -124,7 +124,7 @@ app.listen(3000, () => {
 });
 */
 
-/*
+
     const express = require('express');
 const mysql = require('mysql2');
 const nodemailer = require('nodemailer');
@@ -209,13 +209,21 @@ app.get('/enviar-boletines-diarios', async (req, res) => {
   });
 });
 
+
+// 🟢 Iniciar servidor
+app.listen(3000, () => {
+  console.log('Servidor corriendo en http://localhost:3000');
+});
+
+/*
 // Escuchar en el puerto asignado por Render
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
-
 */
+
+/*
 
 const express = require('express');
 const mysql = require('mysql2');
@@ -357,6 +365,7 @@ app.listen(PORT, () => {
 
 
 
+*/
 
 
 
