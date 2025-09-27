@@ -190,20 +190,22 @@ app.get('/enviar-boletines-diarios', async (req, res) => {
       }
     });
 
-    for (const usuario of results) {
-      const mailOptions = {
-        from: 'noticiashoywebapp@gmail.com',
-        to: usuario.usuario_email,
-        subject: 'Boletín diario',
-        text: `Tus intereses: ${usuario.categoria_preferida}`
-      };
+    const usuario = results[0]; // solo el primer usuario
 
-      try {
-        await transporter.sendMail(mailOptions);
-      } catch (error) {
-        console.error(`Error al enviar a ${usuario.usuario_email}:`, error);
-      }
-    }
+const mailOptions = {
+  from: 'noticiashoywebapp@gmail.com',
+  to: usuario.usuario_email,
+  subject: 'Boletín diario (prueba)',
+  text: `Tus intereses: ${usuario.categoria_preferida}`
+};
+
+try {
+  await transporter.sendMail(mailOptions);
+  console.log(`Correo enviado a ${usuario.usuario_email}`);
+} catch (error) {
+  console.error(`Error al enviar a ${usuario.usuario_email}:`, error);
+}
+
 
     res.json({ message: 'Boletines enviados' });
   });
@@ -366,6 +368,7 @@ app.listen(PORT, () => {
 
 
 */
+
 
 
 
