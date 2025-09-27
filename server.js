@@ -186,21 +186,28 @@ app.get('/enviar-boletines-diarios', async (req, res) => {
       service: 'gmail',
       auth: {
         user: 'noticiashoywebapp@gmail.com',
-        pass: 'srcb ljhx mohb ntiv' // tu contraseña de aplicación
+        pass: 'srcb ljhx mohb ntiv'
       }
     });
 
     let enviados = 0;
+
     for (const usuario of results) {
+      const categorias = usuario.categoria_preferida.split(',').map(c => c.trim().toLowerCase());
+
+      const links = categorias.map(cat => 
+        `• ${cat.charAt(0).toUpperCase() + cat.slice(1)}: https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/${cat}`
+      ).join('\n');
+
       const mailOptions = {
         from: 'noticiashoywebapp@gmail.com',
         to: usuario.usuario_email,
-        subject: 'Boletín diario',
-        text: `Hola ${usuario.usuario_email}, tus intereses son: ${usuario.categoria_preferida}`
+        subject: 'Tu boletín personalizado',
+        text: `Hola ${usuario.usuario_email},\n\nEstas son las secciones que te pueden interesar hoy:\n\n${links}`
       };
 
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // espera 1 segundo entre envíos
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await transporter.sendMail(mailOptions);
         enviados++;
         console.log(`✅ Enviado a ${usuario.usuario_email}`);
@@ -371,6 +378,7 @@ app.listen(PORT, () => {
 
 
 */
+
 
 
 
