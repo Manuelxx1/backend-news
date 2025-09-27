@@ -193,18 +193,29 @@ app.get('/enviar-boletines-diarios', async (req, res) => {
     let enviados = 0;
 
     for (const usuario of results) {
-      const categorias = usuario.categoria_preferida.split(',').map(c => c.trim().toLowerCase());
+ const categorias = usuario.categoria_preferida.split(',').map(c => c.trim().toLowerCase());
 
-      const links = categorias.map(cat => 
-        `• ${cat.charAt(0).toUpperCase() + cat.slice(1)}: https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/${cat}`
-      ).join('\n');
+const linksHTML = categorias.map(cat => `
+  <a href="https://4200-cs-a039ce25-3610-425a-9d0a-fbf343f80023.cs-us-east1-pkhd.cloudshell.dev/${cat}" 
+     style="display:inline-block; margin:8px 0; padding:10px 20px; background-color:#007BFF; color:#fff; text-decoration:none; border-radius:5px;">
+    ${cat.charAt(0).toUpperCase() + cat.slice(1)}
+  </a>
+`).join('<br>');
 
-      const mailOptions = {
-        from: 'noticiashoywebapp@gmail.com',
-        to: usuario.usuario_email,
-        subject: 'Tu boletín personalizado',
-        text: `Hola ${usuario.usuario_email},\n\nEstas son las secciones que te pueden interesar hoy:\n\n${links}`
-      };
+const mailOptions = {
+  from: 'noticiashoywebapp@gmail.com',
+  to: usuario.usuario_email,
+  subject: 'Tu boletín personalizado',
+  html: `
+    <div style="font-family:Arial, sans-serif; padding:20px;">
+      <h2>Hola ${usuario.usuario_email}</h2>
+      <p>Estas son las secciones que te pueden interesar hoy:</p>
+      ${linksHTML}
+      <p style="margin-top:20px;">Gracias por seguirnos 💙</p>
+    </div>
+  `
+};
+
 
       try {
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -378,6 +389,7 @@ app.listen(PORT, () => {
 
 
 */
+
 
 
 
