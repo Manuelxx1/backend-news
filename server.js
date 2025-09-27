@@ -124,7 +124,7 @@ app.listen(3000, () => {
 });
 */
 
-
+/*
     const express = require('express');
 const mysql = require('mysql2');
 const nodemailer = require('nodemailer');
@@ -215,7 +215,145 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
 
+*/
 
+const express = require('express');
+const mysql = require('mysql2');
+const nodemailer = require('nodemailer');
+const cors = require('cors');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// =========================================================
+// 1. CONFIGURACIÓN INICIAL (Variables de Entorno y Conexiones Únicas)
+// =========================================================
+
+// Configuración de MySQL: ¡Usando variables de entorno por seguridad!
+const db = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD, // Configura esta variable en Render
+    database: process.env.DB_DATABASE,
+    port: process.env.DB_PORT,
+    ssl: { rejectUnauthorized: false }
+});
+
+// Nodemailer Transporter: Creado una sola vez para eficiencia.
+// Usando configuración explícita para forzar conexión segura (Posible solución al ETIMEDOUT)
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465, 
+    secure: true, // true para puerto 465 (SSL/TLS)
+    auth: {
+        user: process.env.GMAIL_USER, // noticiashoywebapp@gmail.com
+        pass: process.env.GMAIL_APP_PASSWORD // Tu contraseña de aplicación de 16 caracteres
+    }
+});
+
+// =========================================================
+// 2. ENDPOINT: GUARDAR PREFERENCIAS
+// =========================================================
+
+app.post('/guardar-preferencias', (req, res) => {
+    const { email, intereses } = req.body;
+
+    if (!email || !Array.isArray(intereses)) {
+        return res.status(400).json({ message: 'Datos inválidos' });
+    }
+
+    const usuario_email = email;
+    // IMPORTANTE: Asegúrate de que intereses.join(', ') no exceda el límite de caracteres de tu columna MySQL
+    const categoria_preferida = intereses.join(', '); 
+    const frecuencia_envio = 'personalizado';
+
+    const query = `
+        INSERT INTO preferencias (usuario_email, categoria_preferida, frecuencia_envio)
+        VALUES (?, ?, ?)
+    `;
+
+    db.query(query, [usuario_email, categoria_preferida, frecuencia_envio], (err) => {
+        if (err) {
+            console.error('Error al insertar en MySQL:', err);
+            // Devuelve error 409 (Conflicto) si el usuario ya existe.
+            if (err.code === 'ER_DUP_ENTRY') {
+                 return res.status(409).json({ message: 'El correo ya está registrado.' });
+            }
+            return res.status(500).json({ message: 'Error al guardar preferencias' });
+        }
+
+        res.status(200).json({ message: 'Preferencias guardadas correctamente' });
+    });
+});
+
+// ---------------------------------------------------------
+
+// =========================================================
+// 3. ENDPOINT: ENVIAR BOLETINES DIARIOS (POST)
+// =========================================================
+
+app.post('/enviar-boletines-diarios', async (req, res) => {
+    const query = `
+        SELECT usuario_email, categoria_preferida
+        FROM preferencias
+        WHERE frecuencia_envio = 'personalizado'
+    `;
+
+    db.query(query, async (err, results) => {
+        if (err) {
+            console.error('Error al obtener usuarios de la DB:', err);
+            return res.status(500).json({ message: 'Error al obtener usuarios' });
+        }
+        
+        if (results.length === 0) {
+            return res.json({ message: 'No hay usuarios para enviar boletines.' });
+        }
+
+        // Se usa .map() para crear un array de PROMESAS de envío (ejecución paralela)
+        const enviosPromesas = results.map(usuario => {
+            const mailOptions = {
+                from: process.env.GMAIL_USER,
+                to: usuario.usuario_email,
+                subject: 'Boletín diario: ¡Tus noticias de hoy!',
+                text: `Hola, aquí está tu boletín con los temas que te interesan: ${usuario.categoria_preferida}.`
+            };
+
+            // Intentamos enviar el correo y manejamos el resultado
+            return transporter.sendMail(mailOptions)
+                .then(info => {
+                    console.log(`✅ Correo enviado a ${usuario.usuario_email}: ${info.response}`);
+                    return { email: usuario.usuario_email, status: 'ENVIADO' };
+                })
+                .catch(error => {
+                    // Muestra el error de SMTP/conexión en los logs de Render
+                    console.error(`❌ Error al enviar a ${usuario.usuario_email} (código: ${error.code}): ${error.message}`);
+                    return { email: usuario.usuario_email, status: 'FALLIDO', error: error.code || error.message };
+                });
+        });
+
+        // Promise.all espera a que TODAS las promesas terminen
+        const resultadosEnvio = await Promise.all(enviosPromesas);
+
+        // Devuelve un resumen de los resultados al cliente
+        res.status(200).json({ 
+            message: `Proceso de boletines finalizado. Total: ${results.length}.`,
+            resumen: {
+                enviados: resultadosEnvio.filter(r => r.status === 'ENVIADO').length,
+                fallidos: resultadosEnvio.filter(r => r.status === 'FALLIDO').length,
+            },
+            detalles: resultadosEnvio // Opcional: para ver fallos específicos
+        });
+    });
+});
+
+// ---------------------------------------------------------
+
+// Escuchar en el puerto asignado por Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en puerto ${PORT}`);
+});
 
 
 
