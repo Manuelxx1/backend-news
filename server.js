@@ -186,30 +186,33 @@ app.get('/enviar-boletines-diarios', async (req, res) => {
       service: 'gmail',
       auth: {
         user: 'noticiashoywebapp@gmail.com',
-        pass: 'srcb ljhx mohb ntiv'
+        pass: 'srcb ljhx mohb ntiv' // tu contraseña de aplicación
       }
     });
 
-    const usuario = results[0]; // solo el primer usuario
+    let enviados = 0;
+    for (const usuario of results) {
+      const mailOptions = {
+        from: 'noticiashoywebapp@gmail.com',
+        to: usuario.usuario_email,
+        subject: 'Boletín diario',
+        text: `Hola ${usuario.usuario_email}, tus intereses son: ${usuario.categoria_preferida}`
+      };
 
-const mailOptions = {
-  from: 'noticiashoywebapp@gmail.com',
-  to: usuario.usuario_email,
-  subject: 'Boletín diario (prueba)',
-  text: `Tus intereses: ${usuario.categoria_preferida}`
-};
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // espera 1 segundo entre envíos
+        await transporter.sendMail(mailOptions);
+        enviados++;
+        console.log(`✅ Enviado a ${usuario.usuario_email}`);
+      } catch (error) {
+        console.error(`❌ Error al enviar a ${usuario.usuario_email}:`, error.message);
+      }
+    }
 
-try {
-  await transporter.sendMail(mailOptions);
-  console.log(`Correo enviado a ${usuario.usuario_email}`);
-} catch (error) {
-  console.error(`Error al enviar a ${usuario.usuario_email}:`, error);
-}
-
-
-    res.json({ message: 'Boletines enviados' });
+    res.json({ message: `Boletines enviados a ${enviados} usuarios` });
   });
 });
+
 
 
 app.listen(3001, '0.0.0.0', () => {
@@ -368,6 +371,7 @@ app.listen(PORT, () => {
 
 
 */
+
 
 
 
